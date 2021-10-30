@@ -1,0 +1,20 @@
+# Python compile and backup files
+*.pyc
+*.py.bak
+
+# Build and deploy
+build/
+dist/
+*.egg-info
+node_modules/
+
+# Testing
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache
+test-reports/
+
+# Misc
+.idea/
+.DS_Store
