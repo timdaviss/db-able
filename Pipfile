@@ -15,6 +15,7 @@ ipython = "==5.8.0"
 pylint = "==1.9.5"
 
 [packages]
+do-py = "*"
 
 [requires]
 python_version = "2.7"
