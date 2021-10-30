@@ -1,5 +1,5 @@
 # db-able
-![release](https://img.shields.io/github/package-json/v/timdaviss/db-abledb-able?label=release&logo=release&style=flat-square)
+![release](https://img.shields.io/github/package-json/v/timdaviss/db-able?label=release&logo=release&style=flat-square)
 ![build](https://img.shields.io/github/workflow/status/timdaviss/db-able/test?style=flat-square)
 ![coverage](https://img.shields.io/codecov/c/github/timdaviss/db-able?style=flat-square)
 ![dependencies](https://img.shields.io/librariesio/release/pypi/db-able?style=flat-square)
