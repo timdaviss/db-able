@@ -15,7 +15,9 @@ ipython = "==5.8.0"
 pylint = "==1.9.5"
 
 [packages]
-do-py = "*"
+do-py = "==0.3.4"
+sqlalchemy = "==1.4.26"
+pymysql = "*"
 
 [requires]
 python_version = "2.7"
