@@ -5,8 +5,8 @@ verify_ssl = true
 
 [packages]
 do-py = "==0.3.5"
-#sqlalchemy = "==1.4.26"
-#pymysql = "*"
+sqlalchemy = "==1.4.26"
+pymysql = "*"
 
 [dev-packages]
 pytest = "==4.6.11"
