@@ -4,19 +4,24 @@
 from do_py.abc import ABCRestrictions
 
 from db_able.base_model.database_abc import Database
-from db_able.base_model.kwargs_validator import KwargsValidator
 from db_able.client import DBClient
 
 
+@ABCRestrictions.require('load_params')
 class Loadable(Database):
     """
     This is a mixin designed to access DB with a standard classmethod action, `load`.
     Supplants the "R" of CRUD.
-
-    Note: With `Database` implementation, `cls.%s_params % cls.mixin_name` are injected as a required attribute.
     """
     _is_abstract_ = True
-    mixin_name = 'load'
+
+    @classmethod
+    def __compile__(cls):
+        """
+        Extend compilation checks to validate defined params.
+        """
+        super(Loadable, cls).__compile__()
+        cls._validate_params('load_params')
 
     @classmethod
     def load(cls, **kwargs):
@@ -39,7 +44,8 @@ class Loadable(Database):
         :param kwargs:
         :rtype: cls or None
         """
-        validated_args = cls.kwargs_validator(*cls.params, **kwargs)
-        with DBClient(cls.db, cls.stored_procedure, *validated_args) as conn:
+        stored_procedure = '%s_load%s' % (cls.__name__, cls.load_params.version)
+        validated_args = cls.kwargs_validator(*cls.load_params, **kwargs)
+        with DBClient(cls.db, stored_procedure, *validated_args) as conn:
             for row in conn.data:  # Note: this is a weakness. Load should only return one row.
                 return cls(data=row)

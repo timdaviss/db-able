@@ -6,6 +6,7 @@ from builtins import object
 
 from do_py.utils import cached_property
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 CONN_STR = 'mysql+pymysql://root:GAgh4B5ZF7hXgcbj@localhost?unix_socket=/tmp/mysql.sock'
 
@@ -50,15 +51,19 @@ class DBClient(object):
         :rtype: DBClient
         """
         with self.conn as conn:
-            output = conn.execute(self.sql, self.args)
-            self.data = [
-                {
-                    key: value
-                    for key, value in zip(output.keys(), row)
-                    }
-                for row in output.all()
-                ]
-            return self
+            # noinspection PyPep8Naming
+            Session = sessionmaker(bind=conn)
+            with Session() as session:
+                output = session.execute(self.sql % self.args)
+                self.data = [
+                    {
+                        key: value
+                        for key, value in zip(output.keys(), row)
+                        }
+                    for row in output.all()
+                    ]
+                session.commit()
+                return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """"""

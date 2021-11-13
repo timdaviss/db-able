@@ -4,3 +4,4 @@
 
 from base_model.params import Params
 from loadable import Loadable
+from creatable import Creatable
