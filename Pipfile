@@ -3,6 +3,11 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
+[packages]
+do-py = "==0.3.5"
+sqlalchemy = "==1.4.26"
+pymysql = "*"
+
 [dev-packages]
 pytest = "==4.6.11"
 pytest-cov = "==2.10.1"
@@ -13,11 +18,3 @@ coverage = "==4.5.1"
 twine = "==1.15"
 ipython = "==5.8.0"
 ipdb = "*"
-
-[packages]
-do-py = "==0.3.5"
-sqlalchemy = "==1.4.26"
-pymysql = "*"
-
-[requires]
-python_version = "2.7"
