@@ -35,7 +35,6 @@ jobs:
           sudo systemctl start mysql.service
           mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
           cat tests/sql/testing/tables/*.sql | mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-          cat tests/sql/testing/routines/*.sql | mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       - name: Run Unit Tests
         run: |
           export PYTHONPATH=:$(pwd):$PYTHONPATH
