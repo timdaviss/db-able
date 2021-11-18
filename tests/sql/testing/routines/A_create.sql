@@ -1,3 +1,8 @@
+/**
+    Stored procedure to create a testing `A` DataObject
+    :date_created: 2021-11-18
+ */
+
 USE `testing`;
 DROP PROCEDURE IF EXISTS `testing`.`A_create`;
 
