@@ -38,15 +38,19 @@ class KwargsValidator(DataObject):
         :param signature: tuple of argument values. Ordered by `%s_params` attribute
         :param kwargs: keyword arguments matching `signature` to be validated by `cls._restrictions`
         :return: list of validated kwargs
-        :rtype: list
+        :rtype: list of tuple
         """
         validated_vals = []
         for k in signature:
             try:
                 if k in cls._restrictions:
-                    validated_vals.append(cls._restrictions[k](kwargs.get(k, cls._restrictions[k].default)))
+                    validated_vals.append(
+                        (k, cls._restrictions[k](kwargs.get(k, cls._restrictions[k].default)))
+                        )
                 elif k in cls._extra_restrictions:
-                    validated_vals.append(cls._extra_restrictions[k](kwargs.get(k, cls._extra_restrictions[k].default)))
+                    validated_vals.append(
+                        (k, cls._extra_restrictions[k](kwargs.get(k, cls._extra_restrictions[k].default)))
+                        )
                 else:
                     raise KeyError('Restrictions required for "%s" in %s.' % (k, cls.__name__))
             except RestrictionError as re:

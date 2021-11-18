@@ -2,13 +2,79 @@
 :date_created: 2021-10-23
 """
 
-from builtins import object
+import json
 
 from do_py.utils import cached_property
-from sqlalchemy import create_engine
+from pymysql.constants import FIELD_TYPE
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 CONN_STR = 'mysql+pymysql://root:GAgh4B5ZF7hXgcbj@localhost?unix_socket=/tmp/mysql.sock'
+
+
+class Data(object):
+    """
+    Managed attribute for DBClient to load JSON data for sqlalchemy.
+    """
+
+    def __get__(self, instance, owner):
+        """
+        :type instance: DBClient
+        :type owner: type
+        :rtype: list of tuple
+        """
+        # noinspection PyUnresolvedReferences
+        return instance.__data
+
+    def __set__(self, instance, data):
+        """
+        Validate that `value` is a list of 2-tuples and is dict-transformation friendly.
+        `json.dumps` dict and list vals in tuple[1] of each element
+        :type instance: DBClient
+        :type data: list of dict
+        """
+        # TODO: Validate that `data` is a list of dict.
+        new_data = []
+        for datum in data:
+            new_datum = {}
+            for key, value in datum.items():
+                if instance.data_types[key] == FIELD_TYPE.JSON and value is not None:
+                    new_datum[key] = json.loads(value)
+                else:
+                    new_datum[key] = value
+            new_data.append(new_datum)
+        instance.__data = new_data
+
+
+class Args(object):
+    """
+    Managed attribute for DBClient to dump JSON data for sqlalchemy.
+    """
+
+    def __get__(self, instance, owner):
+        """
+        :type instance: DBClient
+        :type owner: type
+        :rtype: list of tuple
+        """
+        # noinspection PyUnresolvedReferences
+        return instance.__args
+
+    def __set__(self, instance, args):
+        """
+        Validate that `value` is a list of 2-tuples and is dict-transformation friendly.
+        `json.dumps` dict and list vals in tuple[1] of each element
+        :type instance: DBClient
+        :type args: list of tuple
+        """
+        dict(args)  # Attempting this throws a ValueError for malformed `value`.
+        new_args = []
+        for key, value in args:
+            if isinstance(value, dict) or isinstance(value, list):
+                new_args.append((key, json.dumps(value)))
+            else:
+                new_args.append((key, value))
+        instance.__args = new_args
 
 
 class DBClient(object):
@@ -17,13 +83,14 @@ class DBClient(object):
     Implementation is scoped to using stored procedures and provided arguments.
     """
     engine = create_engine(CONN_STR)
-    data = None
+    data = Data()
+    args = Args()
 
     def __init__(self, database, stored_procedure, *args, **kwargs):
         """
         :type database: str
         :type stored_procedure: str
-        :param args: Stored procedure's argument values.
+        :param args: *list of tuple; Stored procedure's keyword argument values.
         :param kwargs: Additional keyword arguments to adjust DB execution logic.
         :keyword rollback: bool; Rolls back changes on exception.
         """
@@ -35,12 +102,14 @@ class DBClient(object):
     @property
     def sql(self):
         """
-        :rtype: str
+        :rtype: sqlalchemy.sql.elements.TextClause
         """
-        return 'CALL `{database}`.`{stored_procedure}`({args});'.format(
-            database=self.database,
-            stored_procedure=self.stored_procedure,
-            args=','.join('%s' for _ in self.args)
+        return text(
+            'CALL `{database}`.`{stored_procedure}`({args});'.format(
+                database=self.database,
+                stored_procedure=self.stored_procedure,
+                args=','.join(':%s' % arg[0] for arg in self.args)
+                )
             )
 
     @cached_property
@@ -64,14 +133,10 @@ class DBClient(object):
         Execute the constructed `self.sql` command in DB based on `__init__` params.
         :rtype: DBClient
         """
-        output = self.session.execute(self.sql % self.args)
-        self.data = [
-            {
-                key: value
-                for key, value in zip(output.keys(), row)
-                }
-            for row in output.all()
-            ]
+        output = self.session.execute(self.sql.bindparams(**dict(self.args)))
+        # {column_name: pymysql column type}
+        self.data_types = {descriptor[0]: descriptor[1] for descriptor in output.cursor.description}
+        self.data = [dict(row) for row in output.all()]
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
