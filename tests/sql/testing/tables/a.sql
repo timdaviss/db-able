@@ -5,6 +5,7 @@
 
 USE `testing`;
 
+DELIMITER $$
 CREATE TABLE IF NOT EXISTS `testing`.`a`
 (
     `id`       INT         NOT NULL AUTO_INCREMENT,
@@ -15,3 +16,5 @@ CREATE TABLE IF NOT EXISTS `testing`.`a`
     `datetime` TIMESTAMP   NULL,
     PRIMARY KEY (`id`)
 );
+$$
+DELIMITER ;

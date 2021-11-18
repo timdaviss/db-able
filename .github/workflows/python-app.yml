@@ -31,9 +31,9 @@ jobs:
       - name: Setup MySQL Server
         run: |
           sudo systemctl start mysql.service
-          for %S in (tests/sql/*/*.sql) do mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-          for %S in (tests/sql/*/tables/*.sql) do mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-          for %S in (tests/sql/*/routines/*.sql) do mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          cat tests/sql/*/*.sql | mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          cat tests/sql/*/tables/*.sql | mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          cat tests/sql/*/routines/*.sql | mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       - name: Run Unit Tests
         run: |
           export PYTHONPATH=:$(pwd):$PYTHONPATH
