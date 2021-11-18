@@ -6,6 +6,7 @@
 USE `testing`;
 DROP PROCEDURE IF EXISTS `testing`.`A_create`;
 
+DELIMITER $$
 CREATE
     DEFINER = `root`@`localhost` PROCEDURE `testing`.`A_create`
 (
@@ -36,4 +37,5 @@ BEGIN
         );
     CALL `testing`.`A_load`(LAST_INSERT_ID());
 
-END;
+END$$
+DELIMITER ;

@@ -9,7 +9,8 @@ from pymysql.constants import FIELD_TYPE
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-CONN_STR = 'mysql+pymysql://root:GAgh4B5ZF7hXgcbj@localhost?unix_socket=/tmp/mysql.sock'
+# CONN_STR = 'mysql+pymysql://root:GAgh4B5ZF7hXgcbj@localhost?unix_socket=/tmp/mysql.sock'
+CONN_STR = 'mysql+pymysql://root:root@localhost'
 
 
 class Data(object):
