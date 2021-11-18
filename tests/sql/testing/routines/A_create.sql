@@ -1,8 +1,3 @@
-/**
-    Stored procedure to create a testing `A` DataObject
-    :date_created: 2021-11-18
- */
-
 USE `testing`;
 DROP PROCEDURE IF EXISTS `testing`.`A_create`;
 
@@ -12,7 +7,7 @@ CREATE
 (
     IN `_string` VARCHAR(45),
     IN `_json` JSON,
-    IN `_int` INT(11),
+    IN `_int` INT,
     IN `_float` FLOAT,
     IN `_datetime` TIMESTAMP
 )

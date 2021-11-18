@@ -1,8 +1,3 @@
-/**
-    House testing data for DataObject A
-    :date_created: 2021-11-18
- */
-
 USE `testing`;
 
 CREATE TABLE IF NOT EXISTS `testing`.`a`
