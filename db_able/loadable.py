@@ -30,16 +30,19 @@ class Loadable(Database):
         Expects to call the stored procedure: '%s_load' % cls.__name__, i.e. 'MyDataObject_load'
 
         Example:
-            class A(Loadable):
-                db = 'schema_name'
-                _restrictions = {
-                    'id': R.INT,
-                    'x': R.INT.with_default(0),
-                    'y': R.INT.with_default(1)
-                    }
-                load_params = Params('id')  # version=2 allows versioning of the SP, i.e. `A_load_v2`
-
-            a = A.load(id=2)
+            >>> from db_able import Loadable, Params
+            >>> from do_py import R
+            >>>
+            >>> class A(Loadable):
+            >>>     db = 'schema_name'
+            >>>     _restrictions = {
+            >>>         'id': R.INT,
+            >>>         'x': R.INT.with_default(0),
+            >>>         'y': R.INT.with_default(1)
+            >>>         }
+            >>>     load_params = Params('id')  # version=2 allows versioning of the SP, i.e. `A_load_v2`
+            >>>
+            >>> a = A.load(id=2)
 
         :param kwargs:
         :rtype: cls or None
