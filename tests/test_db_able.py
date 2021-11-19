@@ -45,4 +45,5 @@ def test_a():
         )
     loaded = A.load(id=created.id)
     assert loaded == created
-    # TODO: Delete.
+    # TODO: U
+    # TODO: D
