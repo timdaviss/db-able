@@ -22,13 +22,11 @@ BEGIN
     UPDATE
         `testing`.`a`
     SET
-        (
-            `string`=`_string`,
-            `json`=`_json`,
-            `int`=`_int`,
-            `float`=`_float`,
-            `datetime`=`_datetime`
-        )
+        `string`=`_string`,
+        `json`=`_json`,
+        `int`=`_int`,
+        `float`=`_float`,
+        `datetime`=`_datetime`
     WHERE
         `id`=`_id`;
     CALL `testing`.`A_load`(`_id`);
