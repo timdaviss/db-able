@@ -41,7 +41,7 @@ class Deletable(Database):
             >>>         ‘y’: R.INT.with_default(1)
             >>>         }
             >>>     load_params = Params(‘id’)  # version=2 allows versioning of the SP, i.e. `A_load_v2`
-            >>> del_params = Params(‘id’)
+            >>>     del_params = Params(‘id’)
             >>>
             >>> a = A.load(id=2)
             >>> a.delete()
