@@ -24,7 +24,7 @@ def test_a():
     # Update
     created.int = None
     created.float = None
-    created.datetime = datetime.utcfromtimestamp(0)
+    created.datetime = datetime.(2021, 11, 18)
     assert created.save()
     assert loaded != created
     loaded = A.load(id=created.id)
