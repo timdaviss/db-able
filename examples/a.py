@@ -1,6 +1,6 @@
 from do_py import DataObject, R
 
-from db_able import Creatable, Loadable, Savable
+from db_able import Creatable, Loadable, Savable, Deletable
 
 
 class Json(DataObject):
@@ -11,7 +11,7 @@ class Json(DataObject):
         }
 
 
-class A(Creatable, Loadable, Savable):
+class A(Creatable, Loadable, Savable, Deletable):
     """ Basic DBAble implementation for unit tests. """
     db = 'testing'
     _restrictions = {
@@ -25,3 +25,4 @@ class A(Creatable, Loadable, Savable):
     load_params = ['id']
     create_params = ['string', 'json', 'int', 'float', 'datetime']
     save_params = ['id', 'string', 'json', 'int', 'float', 'datetime']
+    del_params = ['id']
