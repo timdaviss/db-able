@@ -25,4 +25,4 @@ class A(Creatable, Loadable, Savable, Deletable):
     load_params = ['id']
     create_params = ['string', 'json', 'int', 'float', 'datetime']
     save_params = ['id', 'string', 'json', 'int', 'float', 'datetime']
-    del_params = ['id']
+    delete_params = ['id']

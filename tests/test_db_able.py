@@ -31,6 +31,6 @@ def test_a():
     assert loaded == created
     # Delete
     created.delete()
-    # assert created != loaded
-    loaded = A.load(id=created.id)
+    assert created != loaded
+    loaded = A.load(id=loaded.id)
     assert not loaded

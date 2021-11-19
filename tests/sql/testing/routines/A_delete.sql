@@ -14,11 +14,12 @@ CREATE
 )
 BEGIN
 
-    DELETE FROM
+    DELETE
+    FROM
         `testing`.`a`
     WHERE
-        `id`=`_id`;
-    SELECT row_count() AS `deleted`;
+        `id` = `_id`;
+    SELECT ROW_COUNT() AS `deleted`;
 
 END;
 $$
