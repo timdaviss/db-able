@@ -52,6 +52,6 @@ class Deletable(Database):
         stored_procedure = ‘%s_delete%s’ % (cls.__name__, cls.del_params.version)
         validated_args = self.kwargs_validator(*self.del_params, **self)
         with DBClient(cls.db, stored_procedure, *validated_args) as conn:
-        assert conn.data, ‘Expected a truthy response for `%s`.`%s`’ % (cls.db, stored_procedure)
-        assert conn.data[0][‘deleted’], ‘No data deleted.’
+            assert conn.data, ‘Expected a truthy response for `%s`.`%s`’ % (cls.db, stored_procedure)
+            assert conn.data[0][‘deleted’], ‘No data deleted.’
         return True
