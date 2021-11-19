@@ -1,15 +1,14 @@
 """
-Placeholder unit test.
-:date_created: 2020-12-05
+:date_created: 2021-10-30
 """
 from datetime import datetime
 
 from examples.a import A
 
 
-def test_a():
+def test_db_able():
     """
-
+    This is an integration test. It covers end-to-end functionality of the db_able package.
     """
     # Create
     created = A.create(
