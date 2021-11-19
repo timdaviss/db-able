@@ -54,4 +54,5 @@ class Deletable(Database):
         with DBClient(cls.db, stored_procedure, *validated_args) as conn:
             assert conn.data, ‘Expected a truthy response for `%s`.`%s`’ % (cls.db, stored_procedure)
             assert conn.data[0][‘deleted’], ‘No data deleted.’
-        return True
+            self(None, strict=False)  # Deletes data from memory on success
+            return True
