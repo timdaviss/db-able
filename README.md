@@ -4,14 +4,14 @@
 ![coverage](https://img.shields.io/codecov/c/github/timdaviss/db-able?style=flat-square)
 ![dependencies](https://img.shields.io/librariesio/release/pypi/db-able?style=flat-square)
 
-Boiler plate for building new repos within do-py-together infrastructure.
+Framework to implement basic CRUD operations with DB for [DataObject](https://github.com/do-py-together/do-py).
 
 ## Usage
 ```python
 from db_able import client
 
 
-client.CONN_STR = 'mysql+pymysql://root:GAgh4B5ZF7hXgcbj@localhost?unix_socket=/tmp/mysql.sock'
+client.CONN_STR = 'mysql+pymysql://root:root@localhost?unix_socket=/tmp/mysql.sock'
 ```
 
 ### Testing & Code Quality
