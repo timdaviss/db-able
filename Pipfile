@@ -5,17 +5,17 @@ verify_ssl = true
 
 [packages]
 do-py = "==0.3.5"
-sqlalchemy = "==1.4.27"
-pymysql = "==1.0.2"
+sqlalchemy = "*"
+pymysql = "*"
 
 [dev-packages]
-pytest = "==6.2.5"
-pytest-cov = "==3.0.0"
-pytest-forked = "==1.3.0"
-pytest-timeout = "==2.0.1"
-pytest-xdist = "==2.4.0"
-coverage = "==6.1.2"
-twine = "==3.6.0"
-ipython = "==7.29.0"
-ipdb = "==0.13.9"
+pytest = "*"
+pytest-cov = "*"
+pytest-forked = "*"
+pytest-timeout = "*"
+pytest-xdist = "*"
+coverage = "*"
+twine = "*"
+ipython = "*"
+ipdb = "*"
 pyhumps = "*"
