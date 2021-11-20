@@ -14,7 +14,6 @@ class Database(KwargsValidator):
     Abstracted common required attributes and functionality for all DBAble mixins.
     """
     _is_abstract_ = True
-    mixin_name_registry = {}
 
     @classmethod
     def _validate_params(cls, params_attr_name):
