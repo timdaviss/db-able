@@ -13,7 +13,6 @@ from db_able import client
 
 
 client.CONN_STR = '{dialect}+{driver}://{username}:{password}@{host}:{port}/{database}?{query_args}'
-client.CONN_STR = 'mysql+pymysql://root:root@localhost?unix_socket=/tmp/mysql.sock'
 ```
 
 Implement the mixins into your DataObject to inject CRUD methods.
