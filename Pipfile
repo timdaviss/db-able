@@ -7,6 +7,7 @@ verify_ssl = true
 do-py = "==0.3.5"
 sqlalchemy = "==1.4.27"
 pymysql = "==1.0.2"
+pyhumps = "==3.0.2"
 
 [dev-packages]
 pytest = "==6.2.5"
@@ -18,4 +19,3 @@ coverage = "==6.1.2"
 twine = "==3.6.0"
 ipython = "==7.29.0"
 ipdb = "==0.13.9"
-pyhumps = "*"
