@@ -20,7 +20,7 @@ class ABCSQL(DataObject):
     def get_table_name(cls, cls_ref):
         """
         Decamelize the `cls_ref.__name__` to get a default table name.
-        :type cls_ref: Creatable or Loadable or Savable or Deletable
+        :type cls_ref: type
         :rtype: str
         """
         table_name = humps.decamelize(cls_ref.__name__)
@@ -49,7 +49,7 @@ class LoadProcedure(ABCSQL):
     @classmethod
     def from_db_able(cls, cls_ref):
         """
-        :type cls_ref: Loadable
+        :type cls_ref: type[Loadable]
         :rtype: LoadProcedure
         """
         return cls({
