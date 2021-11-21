@@ -64,10 +64,8 @@ class CreateProcedure(ABCSQL):
     SQL generator helper for Creatable.
     Note: Creatable assumes the DBAble is Loadable also.
     """
-    BASE_SQL = '''
-    INSERT INTO `{db}`.`{table_name}` ({columns}) VALUES ({values_clause});
-    CALL `{db}`.`{cls_name}_load{load_version}`(LAST_INSERT_ID())%s
-    ''' % ';'
+    BASE_SQL = '''INSERT INTO `{db}`.`{table_name}` ({columns}) VALUES ({values_clause});
+    CALL `{db}`.`{cls_name}_load{load_version}`(LAST_INSERT_ID())%s''' % ';'
     _restrictions = {
         'db': R.STR,
         'table_name': R.STR,
@@ -98,10 +96,8 @@ class SaveProcedure(ABCSQL):
     SQL generator helper for Savable.
     Note: Savable assumes the DBAble is Loadable also.
     """
-    BASE_SQL = '''
-    UPDATE `{db}`.`{table_name}` SET ({set_clause}) WHERE {where_clause};
-    CALL `{db}`.`{cls_name}_load{load_version}`({load_params})%s
-    ''' % ';'
+    BASE_SQL = '''UPDATE `{db}`.`{table_name}` SET {set_clause} WHERE {where_clause};
+    CALL `{db}`.`{cls_name}_load{load_version}`({load_params})%s''' % ';'
     _restrictions = {
         'db': R.STR,
         'table_name': R.STR,
@@ -122,7 +118,7 @@ class SaveProcedure(ABCSQL):
             'db': cls_ref.db,
             'table_name': cls.get_table_name(cls_ref),
             'set_clause': ', '.join(
-                '`{param}=`_{param}`'.format(param=param)
+                '`{param}`=`_{param}`'.format(param=param)
                 for param in [p for p in cls_ref.save_params if p not in cls_ref.load_params]
                 ),
             'where_clause': ' AND '.join('`{param}` = `_{param}`'.format(param=param) for param in cls_ref.load_params),
@@ -137,10 +133,8 @@ class DeleteProcedure(ABCSQL):
     SQL generator helper for Deletable.
     Note: Savable assumes the DBAble is Loadable also.
     """
-    BASE_SQL = '''
-    DELETE FROM `{db}`.`{table_name}` WHERE {where_clause};
-    SELECT ROW_COUNT() AS `deleted`%s
-    ''' % ';'
+    BASE_SQL = '''DELETE FROM `{db}`.`{table_name}` WHERE {where_clause};
+    SELECT ROW_COUNT() AS `deleted`%s''' % ';'
     _restrictions = {
         'db': R.STR,
         'table_name': R.STR,
