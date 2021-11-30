@@ -72,7 +72,7 @@ class InfiniteScroll(ABCPagination, Validator):
     This design suffers from UX issues: Skipping through pages cannot be supported, only the next page is available.
     """
     _restrictions = {
-        'after': R(),  # TODO: R.NULL_STR, handle encryption/decryption
+        'after': R(),  # Note: Does not handle encryption/decryption for external exposure.
         'has_more': R.BOOL,
         # 'total': R.INT  # Anti-pattern; InfiniteScroll is intended to be performant with large data sets.
         }
@@ -211,6 +211,7 @@ class Paginated(_Listable):
 class Scrollable(_Listable):
     """
     Mixin to support Infinite Scroll pagination design.
+    :attribute to_after: method to convert self into the appropriate cursor value for `list` stored procedure.
     """
     _is_abstract_ = True
     pagination_type = PaginationType.INFINITE_SCROLL
