@@ -35,6 +35,7 @@ jobs:
           cat tests/sql/*/*.sql | mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
           cat tests/sql/*/tables/*.sql | mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
           cat tests/sql/*/routines/*.sql | mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          cat tests/sql/*/seed_data/*.sql | mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       - name: Run Unit Tests
         run: |
           export PYTHONPATH=:$(pwd):$PYTHONPATH

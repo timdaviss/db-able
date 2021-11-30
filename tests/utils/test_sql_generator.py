@@ -1,13 +1,17 @@
 """
 :date_created: 2021-11-21
 """
+from typing import Type, Union
+
 import pytest
 from do_py import R
 
-from db_able import Loadable, Creatable, Savable, Deletable
-from db_able.utils.sql_generator import ABCSQL, LoadProcedure, CreateProcedure, SaveProcedure, DeleteProcedure, \
-    CoreStoredProcedure, procedure_mapping, print_all_sps
+from db_able import Creatable, Deletable, Loadable, Paginated, Savable, Scrollable
+from db_able.utils.sql_generator import ABCSQL, CoreStoredProcedure, CreateProcedure, DeleteProcedure, LoadProcedure, \
+    PaginatedListProcedure, SaveProcedure, ScrollListProcedure, print_all_sps, procedure_mapping
 from examples.a import A
+from examples.b import B
+from examples.c import C
 
 
 class DummyABCSQL(ABCSQL):
@@ -262,16 +266,131 @@ class TestDeleteProcedure(object):
         assert self.class_ref.from_db_able(cls_ref) == expected_output
 
 
-class TestCoreStoredProcedure(object):
-    class_ref = CoreStoredProcedure
+class TestPaginatedListProcedure(object):
+    class_ref = PaginatedListProcedure
 
     @pytest.fixture(params=['A'])
     def cls_ref(self, request):
         """
         :type request: pytest.SubRequest
+        :rtype: Type[Paginated]
+        """
+        return type(request.param, (Paginated,), {
+            '__module__': 'pytesting',
+            'db': 'testing',
+            '_restrictions': {
+                'id': R.INT,
+                'x': R.INT,
+                'y': R.INT,
+                'z': R.INT
+                },
+            '_extra_restrictions': {
+                'limit': R.INT.with_default(10),
+                'page': R.INT.with_default(1)
+                },
+            'list_params': ['limit', 'page']
+            })
+
+    @pytest.fixture
+    def expected_output(self, request):
+        """
+        :type request: pytest.SubRequest
+        :rtype: PaginatedListProcedure
+        """
+        data = {
+            'db': 'testing',
+            'opt_where_clause': ''
+            }
+        data.update(request.param)
+        return self.class_ref(data)
+
+    @pytest.mark.parametrize('cls_ref, expected_output', [
+        ('A', {'table_name': 'a'}),
+        ('User', {'table_name': 'user'}),
+        ('CouchPotato', {'table_name': 'couch_potato'})
+        ], indirect=True)
+    def test_from_db_able(self, cls_ref: Type[Paginated], expected_output):
+        """
+        :type cls_ref: Type[Paginated]
+        :type expected_output: PaginatedListProcedure
+        """
+        assert self.class_ref.from_db_able(cls_ref) == expected_output
+
+
+class TestScrollListProcedure(object):
+    class_ref = ScrollListProcedure
+
+    @pytest.fixture(params=['A'])
+    def cls_ref(self, request):
+        """
+        :type request: pytest.SubRequest
+        :rtype: Type[Scrollable]
+        """
+        return type(request.param, (Scrollable,), {
+            '__module__': 'pytesting',
+            'db': 'testing',
+            '_restrictions': {
+                'id': R.INT,
+                'x': R.INT,
+                'y': R.INT,
+                'z': R.INT
+                },
+            '_extra_restrictions': {
+                'limit': R.INT.with_default(10),
+                'after': R.INT.with_default(0)
+                },
+            'list_params': ['limit', 'after'],
+            'to_after': lambda x: x.id
+            })
+
+    @pytest.fixture
+    def expected_output(self, request):
+        """
+        :type request: pytest.SubRequest
+        :rtype: ScrollListProcedure
+        """
+        data = {
+            'db': 'testing',
+            'where_clause': '`after` = `_after`'
+            }
+        data.update(request.param)
+        return self.class_ref(data)
+
+    @pytest.mark.parametrize('cls_ref, expected_output', [
+        ('A', {'table_name': 'a'}),
+        ('User', {'table_name': 'user'}),
+        ('CouchPotato', {'table_name': 'couch_potato'})
+        ], indirect=True)
+    def test_from_db_able(self, cls_ref: Type[Scrollable], expected_output):
+        """
+        :type cls_ref: Type[Scrollable]
+        :type expected_output: ScrollListProcedure
+        """
+        assert self.class_ref.from_db_able(cls_ref) == expected_output
+
+
+class TestCoreStoredProcedure(object):
+    class_ref = CoreStoredProcedure
+
+    @pytest.fixture(params=[
+        (Scrollable, ['limit', 'after'], {'limit': R.INT.with_default(5), 'after': R.NULL_INT}),
+        (Paginated, ['limit', 'page'], {'limit': R.INT.with_default(5), 'page': R.INT.with_default(1)}),
+        ])
+    def listable_helper(self, request):
+        """
+        :type request: pytest.SubRequest
+        :rtype: tuple[type, list, dict]
+        """
+        return request.param
+
+    @pytest.fixture(params=['A'])
+    def cls_ref(self, request, listable_helper):
+        """
+        :type request: pytest.SubRequest
+        :type listable_helper: tuple[type, list, dict]
         :rtype: type
         """
-        return type(request.param, (Creatable, Loadable, Savable, Deletable,), {
+        return type(request.param, (Creatable, Loadable, Savable, Deletable, listable_helper[0]), {
             '__module__': 'pytesting',
             'db': 'testing',
             '_restrictions': {
@@ -279,10 +398,13 @@ class TestCoreStoredProcedure(object):
                 'y': R.INT,
                 'z': R.INT
                 },
+            '_extra_restrictions': listable_helper[2],
             'load_params': ['x', 'y'],
             'create_params': ['x', 'y', 'z'],
             'save_params': ['x', 'y', 'z'],
-            'delete_params': ['x', 'y']
+            'delete_params': ['x', 'y'],
+            'list_params': listable_helper[1],
+            'to_after': None
             })
 
     @pytest.fixture
@@ -290,23 +412,33 @@ class TestCoreStoredProcedure(object):
         """
         :type request: pytest.SubRequest
         :type cls_ref: type[Loadable, Creatable, Savable, Deletable]
+        :type method: tuple[str, str or None]
+        :type params: str
         :rtype: CoreStoredProcedure
         """
         data = {
             'db': 'testing',
-            'method': method,
+            'method': method[0],
             'version': '',
             'params': params
             }
         data.update(request.param)
-        data['procedure'] = procedure_mapping[data['method']].from_db_able(cls_ref).as_sql()
+        data['procedure'] = procedure_mapping[method[1] or method[0]].from_db_able(cls_ref).as_sql()
         return self.class_ref(data)
 
-    @pytest.fixture(params=['create', 'load', 'save', 'delete'])
+    @pytest.fixture(params=[
+        ('create', None),
+        ('load', None),
+        ('save', None),
+        ('delete', None),
+        ('list', 'paginated'),
+        ('list', 'scrollable'),
+        ])
     def method(self, request):
         """
+        Tuple testing data for `method` arg and `procedure_key` kwarg
         :type request: pytest.SubRequest
-        :rtype: str
+        :rtype: tuple[str, str or None]
         """
         return request.param
 
@@ -314,10 +446,10 @@ class TestCoreStoredProcedure(object):
     def params(self, cls_ref, method):
         """
         :type cls_ref: type
-        :type method: str
+        :type method: tuple[str, str]
         :rtype: str
         """
-        params_attr = getattr(cls_ref, '%s_params' % method)
+        params_attr = getattr(cls_ref, '%s_params' % method[0])
         return ',\n'.join('    IN `_%s` INT' % param for param in params_attr)
 
     @pytest.mark.parametrize('cls_ref, expected_output', [
@@ -325,14 +457,21 @@ class TestCoreStoredProcedure(object):
         ('User', {'cls_name': 'User'}),
         ('CouchPotato', {'cls_name': 'CouchPotato'})
         ], indirect=True)
-    def test_from_db_able(self, cls_ref, method, expected_output):
+    def test_from_db_able(
+            self,
+            cls_ref: Type[Union[Creatable, Loadable, Savable, Deletable, Paginated, Scrollable]],
+            method,
+            expected_output
+            ):
         """
-        :type cls_ref: type[Deletable]
+        :type cls_ref: Type[Union[Creatable, Loadable, Savable, Deletable, Paginated, Scrollable]]
         :type method: str
         :type expected_output: DeleteProcedure
         """
-        assert self.class_ref.from_db_able(cls_ref, method) == expected_output
+        assert self.class_ref.from_db_able(cls_ref, method[0], procedure_key=method[1]) == expected_output
 
 
 def test_print_all_sps():
     print_all_sps(A)
+    print_all_sps(B)
+    print_all_sps(C)
