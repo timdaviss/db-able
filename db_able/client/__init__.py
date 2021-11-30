@@ -3,6 +3,7 @@
 """
 
 import json
+import os
 
 from do_py.utils import cached_property
 from do_py.utils.properties import cached_classproperty
@@ -11,7 +12,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from typing import List
 
-CONN_STR = None
+CONN_STR = os.getenv('DB_CONN_STR')
 
 
 class Data(object):
@@ -138,15 +139,43 @@ class DBClient(object):
         """
         return sessionmaker(bind=self.conn)()
 
+    @cached_property
+    def output(self):
+        """
+        Note that calling this property executes the SQL and prepares for a single pass-through of resulting data.
+        :rtype: sqlalchemy.engine.cursor.CursorResult
+        """
+        return self.session.execute(self.sql.bindparams(**dict(self.args)))
+
+    def populate_data(self):
+        """
+        Use the current `self.output.cursor` position to populate `self.data` and `self.data_types`.
+        """
+        # {column_name: pymysql column type}
+        self.data_types = {descriptor[0]: descriptor[1] for descriptor in self.output.cursor.description}
+        data = []
+        for row in self.output.cursor.fetchall():
+            row_dict = {}
+            for description, value in zip(self.output.cursor.description, row):
+                row_dict[description[0]] = value
+            data.append(row_dict)
+        self.data = data
+
+    def next_set(self):
+        """
+        Move cursor to next result set and populate `self.data` with data from next result set.
+        :rtype: bool
+        """
+        next_set_bool = self.output.cursor.nextset() and self.output.cursor.description
+        self.populate_data()
+        return next_set_bool
+
     def __enter__(self):
         """
         Execute the constructed `self.sql` command in DB based on `__init__` params.
         :rtype: DBClient
         """
-        output = self.session.execute(self.sql.bindparams(**dict(self.args)))
-        # {column_name: pymysql column type}
-        self.data_types = {descriptor[0]: descriptor[1] for descriptor in output.cursor.description}
-        self.data = [dict(row) for row in output.all()]
+        self.populate_data()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
