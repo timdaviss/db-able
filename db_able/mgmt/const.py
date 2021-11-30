@@ -5,7 +5,9 @@ Constants for db_able.
 
 
 class PaginationType(object):  # Constant):
-    """"""
+    """
+    Constants for Pagination architectures, for use within the Listable mixin interfaces.
+    """
     PAGINATION = 'pagination'
     INFINITE_SCROLL = 'infinite_scroll'
     allowed = [PAGINATION, INFINITE_SCROLL]

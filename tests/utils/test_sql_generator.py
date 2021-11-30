@@ -6,10 +6,9 @@ from typing import Type, Union
 import pytest
 from do_py import R
 
-from db_able import Loadable, Creatable, Paginated, Savable, Deletable, Scrollable
-from db_able.utils.sql_generator import ABCSQL, LoadProcedure, CreateProcedure, PaginatedListProcedure, SaveProcedure, \
-    DeleteProcedure, \
-    CoreStoredProcedure, ScrollListProcedure, procedure_mapping, print_all_sps
+from db_able import Creatable, Deletable, Loadable, Paginated, Savable, Scrollable
+from db_able.utils.sql_generator import ABCSQL, CoreStoredProcedure, CreateProcedure, DeleteProcedure, LoadProcedure, \
+    PaginatedListProcedure, SaveProcedure, ScrollListProcedure, print_all_sps, procedure_mapping
 from examples.a import A
 from examples.b import B
 from examples.c import C
