@@ -2,8 +2,13 @@
 :date_created: 2021-10-30
 """
 from datetime import datetime
+from typing import Type, Union
+
+import pytest
 
 from examples.a import A
+from examples.b import B
+from examples.c import C
 
 
 def test_db_able():
@@ -33,3 +38,12 @@ def test_db_able():
     assert created != loaded
     loaded = A.load(id=loaded.id)
     assert not loaded
+
+
+@pytest.mark.parametrize('cls_ref', [B, C])
+def test_listable(cls_ref: Type[Union[B, C]]):
+    """
+    Integration test for `Scrollable` (`B`) and `Paginated` (`C`) implementations.
+    """
+    data = list(cls_ref.yield_all(limit=5))
+    assert len(data) == 11  # 11 seed_data points in SQL setup. Ref: tests/sql/testing/seed_data/*.sql
