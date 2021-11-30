@@ -2,11 +2,13 @@
 Utilities to generate SQL templates to simplify creating Stored Procedures for each mixin implementation.
 :date_created: 2021-11-20
 """
+from typing import Type, Union
 
 import humps
 from do_py import DataObject, R
 from do_py.abc import ABCRestrictions
-from db_able import Loadable, Creatable, Savable, Deletable
+
+from db_able import Creatable, Deletable, Loadable, Paginated, Savable, Scrollable
 
 
 @ABCRestrictions.require('BASE_SQL', 'from_db_able')
@@ -17,18 +19,19 @@ class ABCSQL(DataObject):
     _is_abstract_ = True
 
     @classmethod
-    def get_table_name(cls, cls_ref):
+    def get_table_name(
+            cls,
+            cls_ref: Type[Union[Loadable, Creatable, Savable, Deletable, Paginated, Scrollable]]
+            ) -> str:
         """
         Decamelize the `cls_ref.__name__` to get a default table name.
-        :type cls_ref: type
-        :rtype: str
         """
         table_name = humps.decamelize(cls_ref.__name__)
         if table_name == cls_ref.__name__:
             table_name = cls_ref.__name__.lower()
         return table_name
 
-    def as_sql(self):
+    def as_sql(self) -> str:
         """
         :rtype: str
         """
@@ -47,7 +50,7 @@ class LoadProcedure(ABCSQL):
         }
 
     @classmethod
-    def from_db_able(cls, cls_ref):
+    def from_db_able(cls, cls_ref: Type[Loadable]):
         """
         :type cls_ref: type[Loadable]
         :rtype: LoadProcedure
@@ -76,7 +79,7 @@ class CreateProcedure(ABCSQL):
         }
 
     @classmethod
-    def from_db_able(cls, cls_ref):
+    def from_db_able(cls, cls_ref: Type[Creatable]):
         """
         :type cls_ref: Creatable
         :rtype: CreateProcedure
@@ -109,7 +112,7 @@ class SaveProcedure(ABCSQL):
         }
 
     @classmethod
-    def from_db_able(cls, cls_ref):
+    def from_db_able(cls, cls_ref: Type[Savable]):
         """
         :type cls_ref: Savable
         :rtype: SaveProcedure
@@ -131,7 +134,6 @@ class SaveProcedure(ABCSQL):
 class DeleteProcedure(ABCSQL):
     """
     SQL generator helper for Deletable.
-    Note: Savable assumes the DBAble is Loadable also.
     """
     BASE_SQL = '''DELETE FROM `{db}`.`{table_name}` WHERE {where_clause};
     SELECT ROW_COUNT() AS `deleted`%s''' % ';'
@@ -142,10 +144,10 @@ class DeleteProcedure(ABCSQL):
         }
 
     @classmethod
-    def from_db_able(cls, cls_ref):
+    def from_db_able(cls, cls_ref: Type[Deletable]):
         """
-        :type cls_ref: Deletable
-        :rtype: SaveProcedure
+        :type cls_ref: Type[Deletable]
+        :rtype: DeleteProcedure
         """
         return cls({
             'db': cls_ref.db,
@@ -157,11 +159,78 @@ class DeleteProcedure(ABCSQL):
             })
 
 
+class PaginatedListProcedure(ABCSQL):
+    """
+    SQL generator helper for Paginated.
+    """
+    BASE_SQL = '''DECLARE `_offset` INT;
+    DECLARE `_page_number` INT;
+    SET `_page_number` = IFNULL(`_page`, 1);
+    SET `_offset` = (`_page_number` - 1) * `_limit`;
+
+    SELECT * FROM `{db}`.`{table_name}` {opt_where_clause} LIMIT `_limit` OFFSET `_offset`;
+    SELECT `_page_number` as `page`, COUNT(*) as `total`, `_limit` as `page_size` FROM `{db}`.`{table_name}`;'''
+    _restrictions = {
+        'db': R.STR,
+        'table_name': R.STR,
+        'opt_where_clause': R.STR.with_default('')
+        }
+
+    @classmethod
+    def from_db_able(cls, cls_ref: Type[Paginated]):
+        """
+        :type cls_ref: Paginated
+        :rtype: PaginatedListProcedure
+        """
+        return cls({
+            'db': cls_ref.db,
+            'table_name': cls.get_table_name(cls_ref),
+            'opt_where_clause': ' AND '.join(
+                '`{param}` = `_{param}`'.format(param=param)
+                for param in cls_ref.list_params
+                if param not in ['limit', 'page']
+                )
+            })
+
+
+class ScrollListProcedure(ABCSQL):
+    """
+    SQL generator helper for Scrollable.
+    Caveats:
+        * Where clause will need to be implemented manually for `after` param.
+        * Order by clause will need to be implemented manually.
+    """
+    BASE_SQL = '''SELECT * FROM `{db}`.`{table_name}` WHERE {where_clause} LIMIT `_limit`;'''
+    _restrictions = {
+        'db': R.STR,
+        'table_name': R.STR,
+        'where_clause': R.STR
+        }
+
+    @classmethod
+    def from_db_able(cls, cls_ref: Type[Scrollable]):
+        """
+        :type cls_ref: Scrollable
+        :rtype: PaginatedListProcedure
+        """
+        return cls({
+            'db': cls_ref.db,
+            'table_name': cls.get_table_name(cls_ref),
+            'where_clause': ' AND '.join(
+                '`{param}` = `_{param}`'.format(param=param)
+                for param in cls_ref.list_params
+                if param not in ['limit']
+                )
+            })
+
+
 procedure_mapping = {
     'load': LoadProcedure,
     'create': CreateProcedure,
     'save': SaveProcedure,
-    'delete': DeleteProcedure
+    'delete': DeleteProcedure,
+    'paginated': PaginatedListProcedure,
+    'scrollable': ScrollListProcedure
     }
 
 
@@ -191,30 +260,32 @@ DELIMITER ;
     _restrictions = {
         'db': R.STR,
         'cls_name': R.STR,
-        'method': R('create', 'load', 'save', 'delete'),
+        'method': R('create', 'load', 'save', 'delete', 'list'),
         'version': R.STR,
         'params': R.STR,
         'procedure': R.STR
         }
 
     @classmethod
-    def from_db_able(cls, cls_ref, method):
+    def from_db_able(cls, cls_ref: Type[Union[Loadable, Creatable, Savable, Deletable, Paginated, Scrollable]], method,
+                     procedure_key=None):
         """
         Creates string representation of SQL file to create a Stored Procedure for given method.
         :type cls_ref: Creatable or Loadable or Savable or Deletable
         :type method: str
+        :type procedure_key: str or None
         :rtype: CoreStoredProcedure
         """
         params_attr = getattr(cls_ref, '%s_params' % method)
         sql_type_mapping = {
-            str(R.INT): 'INT',
-            str(R.NULL_INT): 'INT',
-            str(R.STR): 'VARCHAR(255)',
-            str(R.NULL_STR): 'VARCHAR(255)',
-            str(R.DATETIME): 'TIMESTAMP',
-            str(R.NULL_DATETIME): 'TIMESTAMP',
-            str(R.FLOAT): 'FLOAT',
-            str(R.NULL_FLOAT): 'FLOAT',
+            str(R.INT[0]): 'INT',
+            str(R.NULL_INT[0]): 'INT',
+            str(R.STR[0]): 'VARCHAR(255)',
+            str(R.NULL_STR[0]): 'VARCHAR(255)',
+            str(R.DATETIME[0]): 'TIMESTAMP',
+            str(R.NULL_DATETIME[0]): 'TIMESTAMP',
+            str(R.FLOAT[0]): 'FLOAT',
+            str(R.NULL_FLOAT[0]): 'FLOAT',
             }
         return cls({
             'db': cls_ref.db,
@@ -229,13 +300,13 @@ DELIMITER ;
                             cls_ref._restrictions.get(
                                 param,
                                 (cls_ref._extra_restrictions or {}).get(param)
-                                )
+                                )[0]
                             )
                         )
                     )
                 for param in params_attr
                 ),
-            'procedure': procedure_mapping[method].from_db_able(cls_ref).as_sql()
+            'procedure': procedure_mapping[procedure_key or method].from_db_able(cls_ref).as_sql()
             })
 
 
@@ -251,4 +322,7 @@ def print_all_sps(cls_ref):
         print(CoreStoredProcedure.from_db_able(cls_ref, 'save').as_sql())
     if Deletable in cls_ref.mro():
         print(CoreStoredProcedure.from_db_able(cls_ref, 'delete').as_sql())
-
+    if Paginated in cls_ref.mro():
+        print(CoreStoredProcedure.from_db_able(cls_ref, 'list', procedure_key='paginated').as_sql())
+    if Scrollable in cls_ref.mro():
+        print(CoreStoredProcedure.from_db_able(cls_ref, 'list', procedure_key='scrollable').as_sql())
