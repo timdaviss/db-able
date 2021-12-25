@@ -31,6 +31,12 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url=package['url'],
     packages=setuptools.find_packages(),
+    install_requires=[
+        'do-py>=0.3"',
+        'sqlalchemy>=1',
+        'pymysql>=1',
+        'pyhumps>=3',
+        ],
     # https://pypi.org/classifiers/
     classifiers=[
         'Development Status :: 3 - Alpha',
