@@ -32,7 +32,7 @@ setuptools.setup(
     url=package['url'],
     packages=setuptools.find_packages(),
     install_requires=[
-        'do-py>=0.3"',
+        'do-py>=0.3',
         'sqlalchemy>=1',
         'pymysql>=1',
         'pyhumps>=3',
