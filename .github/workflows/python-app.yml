@@ -27,6 +27,7 @@ jobs:
       - name: Install Dependencies
         run: |
           rm -rf Pipfile.lock
+          python -m pip install pip==21.1.1
           pip install pipenv
           pipenv install --python ${{ matrix.python-version }} --dev
       - name: Setup MySQL Server
