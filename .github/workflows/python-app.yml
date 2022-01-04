@@ -26,11 +26,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Dependencies
         run: |
-          rm -rf Pipfile.lock
           python -m pip install --upgrade pip
           pip install pipenv
-          pipenv install --python ${{ matrix.python-version }} --dev --skip-lock
-          pipenv lock
       - name: Setup MySQL Server
         run: |
           sudo systemctl start mysql.service
@@ -41,6 +38,9 @@ jobs:
       - name: Run Unit Tests
         run: |
           export PYTHONPATH=:$(pwd):$PYTHONPATH
+          pipenv --python ${{ matrix.python-version }}
+          rm Pipfile.lock
+          pipenv install --dev
           pipenv run pytest -o xfail_strict=True --durations 10 --maxfail 10 --cov ./ --cov-report html --cov-report xml --junitxml test-reports/tests.xml --cov-config=./tests/.coveragerc ./tests/
       # Set up posting code coverage to CodeCov.
       - name: Upload coverage to Codecov
