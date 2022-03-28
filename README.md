@@ -7,6 +7,7 @@
 Framework to implement basic CRUD operations with DB for [DataObject](https://github.com/do-py-together/do-py).
 
 ## Quick start
+### Setup in-line
 Set up your connection string to your database.
 ```python
 from db_able import client
@@ -14,7 +15,13 @@ from db_able import client
 
 client.CONN_STR = '{dialect}+{driver}://{username}:{password}@{host}:{port}/{database}?{query_args}'
 ```
+### Environment Variable
+Set up connection string with an environment variable.
+```bash
+export DB_CONN_STR={dialect}+{driver}://{username}:{password}@{host}:{port}/{database}?{query_args}
+```
 
+### Usage
 Implement the mixins into your DataObject to inject CRUD methods.
 ```python
 from do_py import R
