@@ -4,7 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [packages]
-do-py = "==0.3.5"
+do-py = "==0.4.0"
 sqlalchemy = "==1.4.27"
 pymysql = "==1.0.2"
 pyhumps = "==3.0.2"
